@@ -194,6 +194,7 @@ class MaaSiveAPISession(object):
                  requests_per_second=1,
                  verbose=True,
                  admin_key=None,
+                 api_key=None,
                  auth_token=None,
                  max_history=25,
                  limit=100):
@@ -207,15 +208,16 @@ class MaaSiveAPISession(object):
         self.verbose = verbose
         self.current_user = None
         self.limit = limit
-        if admin_key and auth_token:
-            raise ValueError('use only one of api_key or auth_token')
-        self.admin_key = None
+        if len([ key_type for key_type in [admin_key, api_key, auth_token] if key_type ]) > 1:
+            raise ValueError('use only one of admin_key, api_key, or auth_token')
+        self.admin_key = admin_key
+        self.api_key = api_key
+        self.auth_token = auth_token
         if admin_key:
-            self.admin_key = admin_key
             self.session.headers.update({'X-Admin-Key': admin_key})
-        self.auth_token = None
+        if api_key:
+            self.session.headers.update({'X-API-Key': api_key})
         if auth_token:
-            self.auth_token = auth_token
             self.session.headers.update({'X-Auth-Token': auth_token})
         self._history = deque(maxlen=max_history)
         self.store = {}
